@@ -1,6 +1,8 @@
 package com.example.calculator_independentwork;
 
 import android.os.Bundle;
+import android.util.Log;
+import android.util.LogPrinter;
 import android.view.View;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
@@ -18,7 +20,7 @@ public class MainActivity extends AppCompatActivity {
     private StringBuilder currentInput = new StringBuilder();
     private boolean hasDot = false;
     private boolean isCleared = true;
-    private char lastInput = '\0';
+    private char lastInput = '0';
     private final Handler handler = new Handler();
 
     @Override
@@ -93,7 +95,7 @@ public class MainActivity extends AppCompatActivity {
         currentInput.setLength(0);
         hasDot = false;
         display.setText("0");
-        lastInput = '\0';
+        lastInput = '0';
     }
 
     private void backspace() {
@@ -108,7 +110,7 @@ public class MainActivity extends AppCompatActivity {
                 hasDot = false;
             }
             currentInput.deleteCharAt(currentInput.length() - 1);
-            lastInput = currentInput.length() > 0 ? currentInput.charAt(currentInput.length() - 1) : '\0';
+            lastInput = currentInput.length() > 0 ? currentInput.charAt(currentInput.length() - 1) : '0';
             display.setText(currentInput.length() > 0 ? currentInput.toString() : "0");
             if (currentInput.length() < 1) {
                 MaterialButton buttonAC = findViewById(R.id.buttonAC);
@@ -170,6 +172,23 @@ public class MainActivity extends AppCompatActivity {
 
     private void appendInput(String input) {
         char inputChar = input.charAt(0);
+//        Log.d("Natija: ", currentInput.toString());
+
+        if ((inputChar == '\u2212' && isOperator(inputChar)) && (currentInput.length() == 0 || currentInput.toString().equals("0"))) {
+            if (currentInput.toString().equals("0")) {
+                currentInput.deleteCharAt(currentInput.length() - 1);
+            }
+            lastInput = inputChar;
+            currentInput.append(inputChar);
+            display.setText(currentInput.length() > 0 ? currentInput.toString() : "0");
+            return;
+        } else if ((currentInput.length() == 1 || currentInput.length() == 0) && (lastInput == '\u2212' || lastInput == '0') && isOperator(inputChar)) {
+            currentInput.delete(0, 3);
+            currentInput.append('0');
+            lastInput = '0';
+            display.setText(currentInput.toString());
+            return;
+        }
 
         if ((lastInput == '.' && isOperator(inputChar)) || (isOperator(inputChar) && (currentInput.length() == 0 || isOperator(lastInput)))) {
             currentInput.deleteCharAt(currentInput.length() - 1);
@@ -198,10 +217,13 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void calculateResult() {
-        if (currentInput.length() > 0 && !isOperator(lastInput)) {
+        if (currentInput.length() > 0) {
             try {
                 String expression = currentInput.toString().replace("\u00F7", "/").replace("\u00D7", "*").replace('\u2212', '-').replace('\u002B', '+');
-
+                if (expression.endsWith("-") || expression.endsWith("+") || expression.endsWith("/") || expression.endsWith("*")) {
+                    expression = expression.substring(0, expression.length() - 1);
+                }
+//                Log.d("Natija: ", expression);
                 Expression exp = new ExpressionBuilder(expression).build();
 
                 double result = exp.evaluate();
@@ -217,7 +239,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
     private String formatResult(double result) {
         if (result == (int) result) {
             return String.valueOf((int) result);
@@ -225,7 +246,6 @@ public class MainActivity extends AppCompatActivity {
             return String.valueOf(result);
         }
     }
-
 
     private boolean isOperator(char c) {
         return c == '\u002B' || c == '\u2212' || c == '\u00D7' || c == '\u00F7';
