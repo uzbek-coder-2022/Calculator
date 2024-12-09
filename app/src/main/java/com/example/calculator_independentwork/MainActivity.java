@@ -127,7 +127,7 @@ public class MainActivity extends AppCompatActivity {
                 currentInput.append(formatResult(value / 100));
                 display.setText(currentInput.toString());
                 hasDot = true;
-                lastInput = '\0';
+                lastInput = '0';
             } catch (NumberFormatException e) {
                 display.setText("Hisoblashda xatolik!");
             }
@@ -154,6 +154,8 @@ public class MainActivity extends AppCompatActivity {
         String[] currentInputString = currentInput.toString().split("[*/+\\-]");
         String lastPart = currentInputString.length > 0 ? currentInputString[currentInputString.length - 1] : "";
 
+//        Log.d("Natija: ", lastPart);
+
         if (isOperator(lastInput) && Objects.equals(input, "0") ) {
             currentInput.append(input + '.');
             display.setText(currentInput.toString());
@@ -161,7 +163,7 @@ public class MainActivity extends AppCompatActivity {
             lastInput = '.';
         }
         else if (lastPart.length() > 0) {
-            if (hasDot || (lastInput != '0' && !isOperator(lastInput))) {
+            if (hasDot || (!lastPart.equals("0") && !isOperator(lastInput))) {
                 currentInput.append(input);
                 display.setText(currentInput.toString());
                 lastInput = '0';
@@ -231,7 +233,7 @@ public class MainActivity extends AppCompatActivity {
                 currentInput.setLength(0);
                 currentInput.append(formatResult(result));
                 display.setText(currentInput.toString());
-                lastInput = '\0';
+                lastInput = '0';
                 hasDot = currentInput.toString().contains(".");
             } catch (Exception e) {
                 display.setText(e.toString().indexOf("by zero") != -1 ? "Nolga bo'lish mumkin emas!" : "Hisoblashda xatolik!");
